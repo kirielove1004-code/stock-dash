@@ -20,6 +20,9 @@ jobs:
       - name: Apply Step 1 patch
         run: python scripts/apply_step1.py
 
+      - name: Validate providers.py
+        run: python -m py_compile providers.py
+
       - name: Commit providers.py
         run: |
           git config user.name "stock-dash automation"
