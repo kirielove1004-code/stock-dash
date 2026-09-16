@@ -2,7 +2,8 @@ name: Apply Step 1 data foundation
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -11,124 +12,22 @@ jobs:
   patch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      - name: Patch providers.py
+
+      - name: Apply Step 1 patch
+        run: python scripts/apply_step1.py
+
+      - name: Commit providers.py
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('providers.py')
-          s = p.read_text(encoding='utf-8')
-          marker = '    def automatic(self, code):\n'
-          if 'def _step1_enrich' not in s:
-              method = r'''    def _step1_enrich(self, report, code):
-        """Step 1: enrich the official report with price, quarterly and core ratios."""
-        try:
-            row = self.price_rows.get((code, date.today().isoformat()), {})
-            if not row:
-                self.price(code, date.today())
-                row = self.price_rows.get((code, date.today().isoformat()), {})
-
-            report["market"] = {
-                "close": number(row.get("clpr")),
-                "volume": number(row.get("trqu")),
-                "market_cap": number(row.get("mrktTotAmt")),
-                "date": row.get("basDt"),
-            }
-
-            years = [int(y["year"]) for y in report.get("years", []) if y.get("year")]
-            if not years:
-                return report
-
-            def amount(rows, ids=(), names=(), sj=None, cumulative=False):
-                for r in rows:
-                    if sj and r.get("sj_div") != sj:
-                        continue
-                    if r.get("account_id") in ids or r.get("account_nm") in names:
-                        key = "thstrm_add_amount" if cumulative else "thstrm_amount"
-                        raw = number(r.get(key))
-                        if raw is not None:
-                            return raw / 100_000_000
-                return None
-
-            def statement(year, reprt):
-                corp = self.corp(code)
-                payload = self.dart("fnlttSinglAcntAll.json", corp_code=corp,
-                                    bsns_year=str(year), reprt_code=reprt, fs_div="CFS")
-                return (payload or {}).get("list", [])
-
-            quarters = []
-            for year in years[-2:]:
-                qdata = {}
-                previous_cum = 0
-                for reprt, label in (("11013", "Q1"), ("11012", "Q2"), ("11014", "Q3")):
-                    rows = statement(year, reprt)
-                    rev = amount(rows, ["ifrs-full_Revenue"], ["매출액", "수익(매출액)"], "IS", True)
-                    op = amount(rows, ["dart_OperatingIncomeLoss"], ["영업이익", "영업이익(손실)"], "IS", True)
-                    if rev is not None or op is not None:
-                        qrev = None if rev is None else rev - (previous_cum if label != "Q1" else 0)
-                        qop = None if op is None else op
-                        if label != "Q1" and qop is not None:
-                            prior_op = qdata.get("_op_cum")
-                            qop = qop - prior_op if prior_op is not None else qop
-                        qdata["_rev_cum"] = rev
-                        qdata["_op_cum"] = op
-                        quarters.append({"year": year, "quarter": label,
-                                         "revenue": qrev, "operating_profit": qop})
-                        if rev is not None:
-                            previous_cum = rev
-                rows = statement(year, "11011")
-                annual_rev = amount(rows, ["ifrs-full_Revenue"], ["매출액", "수익(매출액)"], "IS")
-                annual_op = amount(rows, ["dart_OperatingIncomeLoss"], ["영업이익", "영업이익(손실)"], "IS")
-                q3rev = qdata.get("_rev_cum")
-                q3op = qdata.get("_op_cum")
-                quarters.append({"year": year, "quarter": "Q4",
-                                 "revenue": None if annual_rev is None or q3rev is None else annual_rev - q3rev,
-                                 "operating_profit": None if annual_op is None or q3op is None else annual_op - q3op})
-
-            for q in quarters:
-                q.pop("_rev_cum", None); q.pop("_op_cum", None)
-            report["quarters"] = quarters[-8:]
-
-            enriched = []
-            for item in report.get("years", []):
-                year = int(item["year"])
-                rows = statement(year, "11011")
-                revenue = amount(rows, ["ifrs-full_Revenue"], ["매출액", "수익(매출액)"], "IS")
-                op = amount(rows, ["dart_OperatingIncomeLoss"], ["영업이익", "영업이익(손실)"], "IS")
-                net = amount(rows, ["ifrs-full_ProfitLossAttributableToOwnersOfParent"], ["지배기업의 소유주에게 귀속되는 당기순이익(손실)"], "IS")
-                equity = amount(rows, ["ifrs-full_Equity"], ["자본", "자본총계"], "BS")
-                liabilities = amount(rows, ["ifrs-full_Liabilities"], ["부채", "부채총계"], "BS")
-                cfo = amount(rows, ["ifrs-full_CashFlowsFromUsedInOperatingActivities"], ["영업활동으로 인한 현금흐름"], "CF")
-                capex = amount(rows, ["ifrs-full_PurchaseOfPropertyPlantAndEquipment"], ["유형자산의 취득"], "CF")
-                e = {**item,
-                     "revenue": revenue if revenue is not None else item.get("revenue"),
-                     "profit": op if op is not None else item.get("profit"),
-                     "net_income": net if net is not None else item.get("net_income"),
-                     "equity": equity,
-                     "liabilities": liabilities,
-                     "cfo": cfo,
-                     "capex": capex,
-                     "fcf": None if cfo is None or capex is None else cfo - abs(capex),
-                     "operating_margin": None if not revenue or op is None else op / revenue * 100,
-                     "roe": None if not equity or net is None else net / equity * 100,
-                     "debt_ratio": None if not equity or liabilities is None else liabilities / equity * 100,
-                     "eps": None,
-                    }
-                enriched.append(e)
-            report["years"] = enriched
-            return report
-        except DataError:
-            return report
-
-'''
-              s = s.replace(marker, method + marker, 1)
-              s = s.replace('            return self._automatic_direct(code)\n', '            return self._step1_enrich(self._automatic_direct(code), code)\n', 1)
-              p.write_text(s, encoding='utf-8')
-          PY
           git config user.name "stock-dash automation"
           git config user.email "actions@github.com"
           git add providers.py
-          git diff --cached --quiet || git commit -m "Implement Step 1 official data enrichment"
-          git push
+          if git diff --cached --quiet; then
+            echo "No providers.py changes needed."
+          else
+            git commit -m "Implement Step 1 official data enrichment"
+            git push
+          fi
