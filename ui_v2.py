@@ -21,6 +21,27 @@ def apply_theme():
     st.markdown(
         """
 <style>
+
+/* Reference-style dashboard surfaces */
+.sd-dashboard-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding:10px 2px 18px}
+.sd-dashboard-head h1{margin:2px 0 5px;font-size:34px;font-weight:850;letter-spacing:-.045em}
+.sd-dashboard-head p{margin:0;color:#667085;font-size:14px}
+.sd-kicker,.sd-section-label{font-size:10px;font-weight:850;letter-spacing:.12em;color:#2563eb;text-transform:uppercase}
+.sd-live{margin-top:8px;padding:7px 10px;border:1px solid #dbe5f2;border-radius:999px;background:#f8fbff;color:#475467;font-size:10px;font-weight:800;white-space:nowrap}
+.sd-live span{display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;margin-right:6px}
+.sd-section-label{margin:22px 0 10px;color:#98a2b3}
+.sd-kpi{background:#fff;border:1px solid #e5eaf0;border-radius:15px;padding:17px 18px;min-height:108px;box-shadow:0 6px 20px rgba(16,24,40,.035)}
+.sd-kpi-title,.sd-watch-title{font-size:11px;color:#667085;font-weight:750}
+.sd-kpi-value{font-size:21px;font-weight:820;color:#111827;letter-spacing:-.03em;margin-top:10px}
+.sd-kpi-note,.sd-watch-note,.sd-insight-note{font-size:10px;color:#98a2b3;margin-top:7px}
+.sd-panel-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:15px;font-weight:800}
+.sd-panel-title small{font-size:9px;color:#98a2b3;letter-spacing:.1em}
+.sd-watch-card{background:#fff;border:1px solid #e5eaf0;border-radius:15px;padding:16px 17px;min-height:108px;box-shadow:0 6px 20px rgba(16,24,40,.03)}
+.sd-watch-value{font-size:19px;font-weight:820;color:#111827;margin-top:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sd-insight{display:flex;gap:12px;align-items:center;background:linear-gradient(135deg,#fff,#f8fbff);border:1px solid #e5eaf0;border-radius:15px;padding:16px 17px;min-height:84px}
+.sd-insight-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:#eff6ff;color:#2563eb;font-weight:900}
+.sd-insight-title{font-size:11px;color:#667085;font-weight:750}.sd-insight-value{font-size:15px;color:#111827;font-weight:800;margin-top:3px}
+@media(max-width:700px){.sd-dashboard-head{display:block}.sd-live{display:inline-block}.sd-dashboard-head h1{font-size:28px}}
 :root {
   --bg:#ffffff; --surface:#ffffff; --surface-soft:#f8fafc;
   --line:#e7ebf0; --line-strong:#d9e0e8; --text:#111827; --muted:#667085;
