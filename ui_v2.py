@@ -43,7 +43,7 @@ def apply_theme():
 .sd-insight-title{font-size:11px;color:#667085;font-weight:750}.sd-insight-value{font-size:15px;color:#111827;font-weight:800;margin-top:3px}
 @media(max-width:700px){.sd-dashboard-head{display:block}.sd-live{display:inline-block}.sd-dashboard-head h1{font-size:28px}}
 :root {
-  --bg:#ffffff; --surface:#ffffff; --surface-soft:#f8fafc;
+  --bg:#f7f9fc; --surface:#ffffff; --surface-soft:#f1f5f9;
   --line:#e7ebf0; --line-strong:#d9e0e8; --text:#111827; --muted:#667085;
   --blue:#2563eb; --blue-dark:#1d4ed8; --blue-soft:#eff6ff;
   --green:#059669; --red:#dc2626;
@@ -52,12 +52,12 @@ html, body, [class*="css"] {
   font-family:Pretendard,"Noto Sans KR","Apple SD Gothic Neo",sans-serif;
 }
 .stApp { background:var(--bg); color:var(--text); }
-.block-container { max-width:1440px; padding-top:1.35rem; padding-bottom:4rem; }
+.block-container { max-width:1540px; padding-top:1.15rem; padding-bottom:4rem; padding-left:2rem; padding-right:2rem; }
 header[data-testid="stHeader"] {
   background:rgba(255,255,255,.94); border-bottom:1px solid rgba(231,235,240,.75);
   backdrop-filter:blur(12px);
 }
-section[data-testid="stSidebar"] { background:#fff; border-right:1px solid var(--line); }
+section[data-testid="stSidebar"] { background:#fbfdff; border-right:1px solid var(--line); min-width:235px; }
 section[data-testid="stSidebar"] > div { padding-top:.9rem; }
 [data-testid="stSidebar"] .stRadio > label { display:none; }
 [data-testid="stSidebar"] .stRadio div[role="radiogroup"] { gap:.2rem; }
