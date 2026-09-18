@@ -98,18 +98,47 @@ def extract_business_sentences(report):
 
 password = os.getenv("APP_PASSWORD", "")
 if password and not st.session_state.get("authorized"):
-    hero("StockDash", "공식 데이터를 연결해 시장과 기업의 변화를 한 흐름으로 읽습니다.", "SECURE ACCESS")
-    left, center, right = st.columns([1, 1.15, 1])
-    with center:
+    st.markdown("""
+<div class="sd-login-brand">
+  <div class="sd-login-logo">↗</div>
+  <div><strong>StockDash</strong><span>투자 데이터를 더 선명하게</span></div>
+  <div class="sd-login-status"><i></i> SECURE ACCESS</div>
+</div>
+""", unsafe_allow_html=True)
+    preview, access = st.columns([1.65, 1], gap="large")
+    with preview:
+        st.markdown("""
+<div class="sd-login-preview">
+  <div class="sd-login-eyebrow">PERSONAL INVESTMENT OS</div>
+  <h1>시장과 내 종목을<br>한눈에 확인하세요.</h1>
+  <p>공시 · 실적 · 주가 · 수급을 밝고 편안한 화면에서 정리합니다.</p>
+  <div class="sd-login-kpis">
+    <div><small>KOSPI</small><b>시장 흐름</b><span class="up">주요 지수 보기 ↗</span></div>
+    <div><small>MY WATCHLIST</small><b>관심 종목</b><span>변화를 빠르게</span></div>
+    <div><small>VALUATION</small><b>가치 분석</b><span>근거와 함께</span></div>
+  </div>
+  <div class="sd-login-chart">
+    <div class="sd-chart-head"><span>PORTFOLIO OVERVIEW</span><b>Data to Insight.</b></div>
+    <div class="sd-chart-grid">
+      <div class="sd-line-path"></div>
+      <div class="sd-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+    with access:
+        st.markdown('<div class="sd-access-label">PRIVATE DASHBOARD</div>', unsafe_allow_html=True)
         with st.container(border=True):
-            st.subheader("개인 대시보드 열기")
+            st.markdown("### 개인 대시보드 열기")
+            st.caption("내 투자 데이터는 비밀번호로 안전하게 보호됩니다.")
             with st.form("login"):
                 entered = st.text_input("비밀번호", type="password", placeholder="설정한 비밀번호를 입력하세요")
-                if st.form_submit_button("대시보드 열기", type="primary", use_container_width=True):
+                if st.form_submit_button("대시보드 열기  →", type="primary", use_container_width=True):
                     if hmac.compare_digest(entered.encode(), password.encode()):
                         st.session_state.authorized = True
                         st.rerun()
                     st.error("비밀번호를 확인하세요.")
+        st.markdown('<div class="sd-access-note">공식 데이터 기반 · 개인 저장 공간 · 밝은 화면 최적화</div>', unsafe_allow_html=True)
     st.stop()
 
 try:
