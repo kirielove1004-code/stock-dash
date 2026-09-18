@@ -33,6 +33,14 @@ def render_research(store, state, sample_mode):
                             store.save_stock({'code':identity, 'name':name.strip(), 'kind':known.get('kind','관심')})
                             st.rerun()
                         except Exception: st.error('목록 저장에 실패했습니다. 저장 공간 설정을 확인하세요.')
+    # Dashboard-first layout: search/filter controls sit directly under the hero.
+    with st.container(border=True):
+        st.markdown('**내 종목**')
+        search_col, action_col = st.columns([4,1])
+        with search_col:
+            st.text_input('종목 검색', placeholder='종목명 또는 코드로 검색', key='dashboard_search', label_visibility='collapsed')
+        with action_col:
+            st.button('↻ 새로고침', use_container_width=True, key='dashboard_refresh')
     research = published()
     for r in state.get('chat_research', []):
         if r['code'] not in research or r['as_of'] >= research[r['code']]['as_of']: research[r['code']] = r
