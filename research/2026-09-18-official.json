@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "reports": [
+    {
+      "code": "005930",
+      "name": "삼성전자",
+      "as_of": "2026-09-18",
+      "summary": {
+        "text": "2026년 상반기 연결 누적 매출은 305조 4,000억원, 영업이익은 146조 7,000억원입니다. 전년 동기 대비 매출은 약 98.7%, 영업이익은 약 1,186.8% 증가했습니다. 분기 IR의 1분기와 2분기 수치를 합산했으며, 공식 반기보고서 확정 수치와의 재대조가 필요합니다.",
+        "source": "https://www.samsung.com/global/ir/financial-information/earnings-release/"
+      },
+      "business": {
+        "text": "DS는 메모리·시스템LSI·파운드리, DX는 스마트폰·네트워크·TV·가전, SDC는 디스플레이, Harman은 자동차 전장·오디오를 담당합니다. 2026년 상반기 이익 급증은 AI 서버 수요에 대응한 메모리 중심 DS 실적이 핵심이지만, 전사 비교에는 완제품·디스플레이·전장 사업도 함께 포함됩니다.",
+        "source": "https://images.samsung.com/is/content/samsung/assets/global/ir/docs/2026_2Q_conference_eng.pdf"
+      },
+      "financial": {
+        "period": "2026-06",
+        "prior_period": "2025-06",
+        "basis": "연결",
+        "currency": "KRW",
+        "unit": "억원",
+        "revenue": 3054000,
+        "prior_revenue": 1537000,
+        "operating_profit": 1467000,
+        "prior_operating_profit": 114000,
+        "source": "https://www.samsung.com/global/ir/financial-information/earnings-release/"
+      },
+      "peers": {
+        "period": "2026-06",
+        "basis": "연결",
+        "currency": "KRW",
+        "unit": "억원",
+        "source": "https://www.samsung.com/global/ir/financial-information/earnings-release/",
+        "selection_reason": "국내 메모리 반도체 대형사 2곳의 2026년 상반기 전사 영업이익 표본 비교입니다. 삼성전자는 DX·디스플레이·Harman을 포함하므로 메모리 기술력이나 시장점유율 순위로 해석하지 않습니다.",
+        "rows": [
+          {"name": "삼성전자", "operating_profit": 1467000, "period": "2026-06", "basis": "연결", "currency": "KRW", "unit": "억원", "source": "https://www.samsung.com/global/ir/financial-information/earnings-release/"},
+          {"name": "SK하이닉스", "operating_profit": 981400, "period": "2026-06", "basis": "연결", "currency": "KRW", "unit": "억원", "source": "https://news.skhynix.com/en/sk-hynix-announces-2q-2026-financial-results/"}
+        ]
+      },
+      "data_gaps": [
+        "2026년 공식 반기보고서의 누적 수치와 분기 IR 합산값 재대조 필요",
+        "외국인·기관 수급은 기간·단위가 일치하는 공식 원자료 조사 필요",
+        "수정주가 일봉·완료 주봉 시계열 조사 필요",
+        "적정주가는 검증 가능한 평가 공식·가정·기준 주가 조사 필요"
+      ]
+    },
+    {
+      "code": "000660",
+      "name": "SK하이닉스",
+      "as_of": "2026-09-18",
+      "summary": {
+        "text": "2026년 상반기 연결 누적 매출은 131조 9,187억원, 영업이익은 98조 1,400억원입니다. 전년 동기 대비 매출은 약 230.9%, 영업이익은 약 489.3% 증가했습니다. 분기 공식 발표의 1분기와 2분기 수치를 합산했으며, 공식 반기보고서 확정 수치와의 재대조가 필요합니다.",
+        "source": "https://news.skhynix.com/en/sk-hynix-announces-2q-2026-financial-results/"
+      },
+      "business": {
+        "text": "DRAM과 NAND 플래시를 중심으로 HBM, 서버용 DDR5, 기업용 SSD 등 AI 데이터센터용 고부가 메모리를 공급합니다. 2026년 실적 비교에서는 HBM·서버 메모리 수요와 제품 가격 상승이 매출·이익으로 연결됐는지 확인하는 것이 핵심입니다.",
+        "source": "https://news.skhynix.com/en/fms-2026/"
+      },
+      "financial": {
+        "period": "2026-06",
+        "prior_period": "2025-06",
+        "basis": "연결",
+        "currency": "KRW",
+        "unit": "억원",
+        "revenue": 1319187,
+        "prior_revenue": 398711,
+        "operating_profit": 981400,
+        "prior_operating_profit": 166534,
+        "source": "https://news.skhynix.com/en/sk-hynix-announces-2q-2026-financial-results/"
+      },
+      "peers": {
+        "period": "2026-06",
+        "basis": "연결",
+        "currency": "KRW",
+        "unit": "억원",
+        "source": "https://news.skhynix.com/en/sk-hynix-announces-2q-2026-financial-results/",
+        "selection_reason": "국내 메모리 반도체 대형사 2곳의 2026년 상반기 전사 영업이익 표본 비교입니다. 삼성전자는 DX·디스플레이·Harman을 포함하므로 메모리 기술력이나 시장점유율 순위로 해석하지 않습니다.",
+        "rows": [
+          {"name": "삼성전자", "operating_profit": 1467000, "period": "2026-06", "basis": "연결", "currency": "KRW", "unit": "억원", "source": "https://www.samsung.com/global/ir/financial-information/earnings-release/"},
+          {"name": "SK하이닉스", "operating_profit": 981400, "period": "2026-06", "basis": "연결", "currency": "KRW", "unit": "억원", "source": "https://news.skhynix.com/en/sk-hynix-announces-2q-2026-financial-results/"}
+        ]
+      },
+      "data_gaps": [
+        "2026년 공식 반기보고서의 누적 수치와 분기 발표 합산값 재대조 필요",
+        "외국인·기관 수급은 기간·단위가 일치하는 공식 원자료 조사 필요",
+        "수정주가 일봉·완료 주봉 시계열 조사 필요",
+        "적정주가는 검증 가능한 평가 공식·가정·기준 주가 조사 필요"
+      ]
+    }
+  ]
+}
