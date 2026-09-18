@@ -13,7 +13,30 @@ from chat_research import published, parse_bundle, trends, growth, request_text
 
 def render_research(store, state, sample_mode):
     theme()
-    hero('내 투자의 현재를 한눈에', '관심 있는 기업을 담고, 판단에 필요한 변화만 확인하세요.', 'PLANX · STOCK RESEARCH')
+    st.markdown("""
+    <style>
+      .research-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin:4px 0 18px}
+      .research-kicker{font-size:11px;font-weight:850;letter-spacing:.12em;color:#2563eb;text-transform:uppercase}
+      .research-head h1{margin:4px 0 6px;font-size:34px;line-height:1.12;letter-spacing:-.045em;color:#111827}
+      .research-head p{margin:0;color:#667085;font-size:14px}
+      .research-live{padding:7px 11px;border:1px solid #dbe5f2;border-radius:999px;background:#f8fbff;color:#475467;font-size:10px;font-weight:800;white-space:nowrap}
+      .research-live span{display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;margin-right:6px}
+      .research-section{font-size:10px;font-weight:850;letter-spacing:.12em;color:#98a2b3;text-transform:uppercase;margin:22px 0 10px}
+      .research-card{background:#fff;border:1px solid #e5eaf0;border-radius:15px;padding:16px 17px;min-height:108px;box-shadow:0 6px 20px rgba(16,24,40,.03)}
+      .research-card-title{font-size:11px;color:#667085;font-weight:750}
+      .research-card-value{font-size:20px;font-weight:820;color:#111827;letter-spacing:-.03em;margin-top:9px}
+      .research-card-note{font-size:10px;color:#98a2b3;margin-top:7px}
+      @media(max-width:700px){.research-head{display:block}.research-live{display:inline-block;margin-top:12px}.research-head h1{font-size:28px}}
+    </style>
+    <div class="research-head">
+      <div>
+        <div class="research-kicker">STOCKDASH · INVESTMENT OS</div>
+        <h1>시장과 내 종목을 한눈에</h1>
+        <p>관심 기업의 실적, 수급, 밸류에이션 변화를 한 화면에서 확인하세요.</p>
+      </div>
+      <div class="research-live"><span></span>Research workspace</div>
+    </div>
+    """, unsafe_allow_html=True)
     if sample_mode:
         st.info('둘러보기 중입니다. 개인 목록을 저장하려면 먼저 대시보드 비밀번호를 설정하세요.')
     else:
