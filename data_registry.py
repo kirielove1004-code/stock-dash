@@ -114,6 +114,14 @@ def health(spec: ProviderSpec) -> dict:
                         return _result(spec.provider_id, "ok", f"연결·인증 정상 · {mode}", started)
                 except (ValueError, TypeError, AttributeError):
                     pass
+                if candidate.status_code == 400:
+                    body_preview = (candidate.text or "").replace("\n", " ").replace("\r", " ")[:180]
+                    return _result(
+                        spec.provider_id,
+                        "error",
+                        f"HTTP 400 · V2 요청 형식 오류 · 인증키 전송: {mode} · 응답: {body_preview or '본문 없음'}",
+                        started,
+                    )
             # 공공데이터포털은 인증 오류도 HTTP 500 + XML로 반환할 수 있어 본문을 먼저 해석합니다.
             code = ""
             message = ""
