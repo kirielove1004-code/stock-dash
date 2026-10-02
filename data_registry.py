@@ -97,7 +97,7 @@ def health(spec: ProviderSpec) -> dict:
                 params={"serviceKey": key, "resultType": "json", "numOfRows": 1, "pageNo": 1},
                 timeout=(5, 12),
             )
-            response.raise_for_status()
+            # 공공데이터포털은 인증 오류도 HTTP 500 + XML로 반환할 수 있어 본문을 먼저 해석합니다.
             code = ""
             message = ""
             try:
@@ -144,9 +144,18 @@ def health(spec: ProviderSpec) -> dict:
             detail = known.get(code)
             if not detail:
                 upper_message = message.upper()
+                http_known = {
+                    401: "인증 실패 · 서비스키 확인 필요",
+                    403: "서비스 활용신청·접근권한 확인 필요",
+                    429: "호출 한도 초과",
+                    500: "공공데이터포털 인증 또는 서비스 상태 확인 필요",
+                    503: "공공데이터포털 일시 점검 중",
+                }
                 detail = next(
                     (label for token, label in known.items() if token in upper_message),
-                    message or f"응답코드 {code or '확인 필요'}",
+                    message
+                    or http_known.get(response.status_code)
+                    or f"응답코드 {code or '없음'} · HTTP {response.status_code}",
                 )
             return _result(spec.provider_id, "error", detail, started)
 
