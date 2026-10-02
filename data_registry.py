@@ -91,12 +91,29 @@ def health(spec: ProviderSpec) -> dict:
             return _result(spec.provider_id, "error", known.get(code, f"응답코드 {code or '확인 필요'}"), started)
 
         if spec.provider_id == "data_go_kr_stock":
-            key = unquote(os.getenv("DATA_GO_KR_SERVICE_KEY", "").strip())
-            response = requests.get(
-                "https://apis.data.go.kr/1160100/GetStockSecuritiesInfoService_V2/getStockPriceInfo",
-                params={"serviceKey": key, "resultType": "json", "numOfRows": 1, "pageNo": 1},
-                timeout=(5, 12),
-            )
+            raw_key = os.getenv("DATA_GO_KR_SERVICE_KEY", "").strip()
+            key_variants = [("입력값 그대로", raw_key)]
+            decoded_key = unquote(raw_key)
+            if decoded_key != raw_key:
+                key_variants.append(("URL 디코딩값", decoded_key))
+
+            response = None
+            key_mode = ""
+            for mode, key in key_variants:
+                candidate = requests.get(
+                    "https://apis.data.go.kr/1160100/GetStockSecuritiesInfoService_V2/getStockPriceInfo",
+                    params={"serviceKey": key, "resultType": "json", "numOfRows": 1, "pageNo": 1},
+                    timeout=(5, 12),
+                )
+                response = candidate
+                key_mode = mode
+                try:
+                    candidate_payload = candidate.json()
+                    candidate_code = str(candidate_payload.get("response", {}).get("header", {}).get("resultCode", ""))
+                    if candidate_code in {"00", "0", "000"}:
+                        return _result(spec.provider_id, "ok", f"연결·인증 정상 · {mode}", started)
+                except (ValueError, TypeError, AttributeError):
+                    pass
             # 공공데이터포털은 인증 오류도 HTTP 500 + XML로 반환할 수 있어 본문을 먼저 해석합니다.
             code = ""
             message = ""
@@ -143,7 +160,7 @@ def health(spec: ProviderSpec) -> dict:
             }
             detail = known.get(code)
             if detail == "서비스 활용신청·접근권한 확인 필요":
-                detail += " · 현재 앱 호출 서비스: 금융위원회 주식시세정보 / GetStockSecuritiesInfoService_V2/getStockPriceInfo"
+                detail += f" · 현재 앱 호출: V2/getStockPriceInfo · 인증키 전송: {key_mode}"
             if not detail:
                 upper_message = message.upper()
                 http_known = {
