@@ -497,7 +497,7 @@ def render_stock():
     if report.get("sample"):
         st.warning("가상 종목·숫자입니다. 실제 투자 판단에 사용하지 마세요.")
 
-    tabs = st.tabs(["한눈에 분석", "기업·섹터", "공시", "투자일지"])
+    tabs = st.tabs(["한눈에 분석", "실적 분석", "기업·섹터", "공시", "투자일지"])
     with tabs[0]:
         cols = st.columns(4)
         cols[0].metric("기준 종가", f"{report['price']:,.0f}원")
@@ -554,6 +554,56 @@ def render_stock():
                 st.caption("공식 데이터·공시 발췌 기반 해설 · 원문 대조 필요")
 
     with tabs[1]:
+        st.subheader("실적 분석")
+        st.caption("DART 확정 재무제표와 공공 시세를 기준으로 표시합니다. 수집되지 않은 값은 임의로 채우지 않습니다.")
+
+        years_df = pd.DataFrame(report.get("years", []))
+        if not years_df.empty:
+            latest_year = years_df.iloc[-1].to_dict()
+            k1, k2, k3, k4 = st.columns(4)
+            k1.metric("매출", f"{latest_year.get('revenue'):,.0f}억원" if latest_year.get("revenue") is not None else "자료 부족")
+            k2.metric("영업이익", f"{latest_year.get('profit'):,.0f}억원" if latest_year.get("profit") is not None else "자료 부족")
+            k3.metric("영업이익률", f"{latest_year.get('operating_margin'):.1f}%" if latest_year.get("operating_margin") is not None else (f"{result['margin']:.1f}%" if result.get("margin") is not None else "자료 부족"))
+            k4.metric("ROE", f"{latest_year.get('roe'):.1f}%" if latest_year.get("roe") is not None else "자료 부족")
+
+            st.markdown("#### 연간 실적")
+            annual_cols = [c for c in ["year", "revenue", "profit", "net_income", "operating_margin", "roe", "debt_ratio", "fcf"] if c in years_df.columns]
+            annual = years_df[annual_cols].copy()
+            annual = annual.rename(columns={
+                "year": "연도", "revenue": "매출(억원)", "profit": "영업이익(억원)",
+                "net_income": "순이익(억원)", "operating_margin": "영업이익률(%)",
+                "roe": "ROE(%)", "debt_ratio": "부채비율(%)", "fcf": "FCF(억원)",
+            })
+            st.dataframe(annual, hide_index=True, use_container_width=True)
+
+            chart_cols = [c for c in ["year", "revenue", "profit"] if c in years_df.columns]
+            if len(chart_cols) == 3:
+                annual_chart = years_df[chart_cols].rename(columns={"year": "연도", "revenue": "매출", "profit": "영업이익"})
+                annual_chart["연도"] = annual_chart["연도"].astype(str)
+                st.bar_chart(annual_chart.set_index("연도"), color=["#2563EB", "#10B981"])
+
+        quarters = report.get("quarters", [])
+        st.markdown("#### 최근 분기 실적")
+        if quarters:
+            qdf = pd.DataFrame(quarters)
+            qdf["기간"] = qdf["year"].astype(str) + " " + qdf["quarter"].astype(str)
+            qdf = qdf.rename(columns={"revenue": "매출(억원)", "operating_profit": "영업이익(억원)"})
+            show_cols = [c for c in ["기간", "매출(억원)", "영업이익(억원)"] if c in qdf.columns]
+            st.dataframe(qdf[show_cols], hide_index=True, use_container_width=True)
+            if "매출(억원)" in qdf.columns and "영업이익(억원)" in qdf.columns:
+                st.bar_chart(qdf.set_index("기간")[["매출(억원)", "영업이익(억원)"]], color=["#2563EB", "#10B981"])
+        else:
+            empty_state("분기 실적 수집 대기", "최신 데이터 버튼으로 다시 수집해 보세요. DART에 값이 없으면 자료 부족으로 유지합니다.")
+
+        market = report.get("market", {})
+        st.markdown("#### 시장 데이터")
+        m1, m2, m3 = st.columns(3)
+        m1.metric("종가", f"{market.get('close'):,.0f}원" if market.get("close") is not None else f"{report.get('price', 0):,.0f}원")
+        m2.metric("거래량", f"{market.get('volume'):,.0f}주" if market.get("volume") is not None else "자료 부족")
+        m3.metric("시가총액", f"{market.get('market_cap') / 1e8:,.0f}억원" if market.get("market_cap") is not None else "자료 부족")
+        st.caption("분기 값은 누적 공시를 분기 단독 값으로 환산한 결과가 포함될 수 있습니다.")
+
+    with tabs[2]:
         st.subheader("기업 핵심 분석")
         st.write(result["summary"])
         if company:
@@ -573,7 +623,7 @@ def render_stock():
                     st.write("확인할 지표 · " + " · ".join(sector["signals"]))
                     st.caption("원문 발견 단어 · " + ", ".join(sector["keywords"]))
 
-    with tabs[2]:
+    with tabs[3]:
         st.subheader("최근 공시")
         st.caption("현재 수집본 기준이며 실시간 뉴스 전체를 뜻하지 않습니다.")
         notices = sorted(report.get("disclosures", []), key=lambda x: x.get("date", ""), reverse=True)
@@ -583,7 +633,7 @@ def render_stock():
         else:
             empty_state("최근 공시 없음", "현재 수집본에 공시가 없으며, 공시가 없다는 확정 판단은 아닙니다.")
 
-    with tabs[3]:
+    with tabs[4]:
         if is_demo:
             st.info("실제 종목을 분석하면 투자일지와 분석 이력을 저장할 수 있습니다.")
         else:
