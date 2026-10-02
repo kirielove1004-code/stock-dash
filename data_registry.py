@@ -8,6 +8,7 @@ from urllib.parse import unquote
 from zoneinfo import ZoneInfo
 
 import requests
+import xml.etree.ElementTree as ET
 
 
 @dataclass(frozen=True)
@@ -93,15 +94,61 @@ def health(spec: ProviderSpec) -> dict:
             key = unquote(os.getenv("DATA_GO_KR_SERVICE_KEY", "").strip())
             response = requests.get(
                 "https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo",
-                params={"serviceKey": key, "resultType": "json", "numOfRows": 1},
+                params={"serviceKey": key, "resultType": "json", "numOfRows": 1, "pageNo": 1},
                 timeout=(5, 12),
             )
             response.raise_for_status()
-            payload = response.json()
-            code = str(payload.get("response", {}).get("header", {}).get("resultCode", ""))
-            if code in {"00", "0"}:
+            code = ""
+            message = ""
+            try:
+                payload = response.json()
+                header = payload.get("response", {}).get("header", {})
+                code = str(header.get("resultCode", ""))
+                message = str(header.get("resultMsg", ""))
+            except (ValueError, TypeError, AttributeError):
+                try:
+                    root = ET.fromstring(response.text)
+                    code = str(
+                        root.findtext(".//resultCode")
+                        or root.findtext(".//returnReasonCode")
+                        or ""
+                    )
+                    message = str(
+                        root.findtext(".//resultMsg")
+                        or root.findtext(".//returnAuthMsg")
+                        or root.findtext(".//errMsg")
+                        or ""
+                    )
+                except ET.ParseError:
+                    return _result(
+                        spec.provider_id,
+                        "error",
+                        f"응답 형식 오류 · HTTP {response.status_code}",
+                        started,
+                    )
+
+            if code in {"00", "0", "000"}:
                 return _result(spec.provider_id, "ok", "연결·인증 정상", started)
-            return _result(spec.provider_id, "error", f"응답코드 {code or '확인 필요'}", started)
+
+            known = {
+                "20": "서비스 활용신청·접근권한 확인 필요",
+                "22": "호출 한도 초과",
+                "30": "등록되지 않은 서비스키",
+                "31": "서비스키 이용기간 만료",
+                "32": "등록되지 않은 IP",
+                "99": "공공데이터포털 서비스 오류",
+                "SERVICE_ACCESS_DENIED_ERROR": "서비스 활용신청·접근권한 확인 필요",
+                "SERVICE_KEY_IS_NOT_REGISTERED_ERROR": "등록되지 않은 서비스키",
+                "DEADLINE_HAS_EXPIRED_ERROR": "서비스키 이용기간 만료",
+            }
+            detail = known.get(code)
+            if not detail:
+                upper_message = message.upper()
+                detail = next(
+                    (label for token, label in known.items() if token in upper_message),
+                    message or f"응답코드 {code or '확인 필요'}",
+                )
+            return _result(spec.provider_id, "error", detail, started)
 
         return _result(spec.provider_id, "unknown", "진단 미구현", started)
     except requests.Timeout:
