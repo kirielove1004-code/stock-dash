@@ -142,6 +142,8 @@ def health(spec: ProviderSpec) -> dict:
                 "DEADLINE_HAS_EXPIRED_ERROR": "서비스키 이용기간 만료",
             }
             detail = known.get(code)
+            if detail == "서비스 활용신청·접근권한 확인 필요":
+                detail += " · 현재 앱 호출 서비스: 금융위원회 주식시세정보 / GetStockSecuritiesInfoService/getStockPriceInfo"
             if not detail:
                 upper_message = message.upper()
                 http_known = {
