@@ -101,7 +101,7 @@ def health(spec: ProviderSpec) -> dict:
             key_mode = ""
             for mode, key in key_variants:
                 candidate = requests.get(
-                    "https://apis.data.go.kr/1160100/GetStockSecuritiesInfoService_V2/getStockPriceInfo",
+                    "https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo",
                     params={"serviceKey": key, "resultType": "json", "numOfRows": 1, "pageNo": 1},
                     timeout=(5, 12),
                 )
@@ -168,7 +168,7 @@ def health(spec: ProviderSpec) -> dict:
             }
             detail = known.get(code)
             if detail == "서비스 활용신청·접근권한 확인 필요":
-                detail += f" · 현재 앱 호출: V2/getStockPriceInfo · 인증키 전송: {key_mode}"
+                detail += f" · 현재 앱 호출: service/GetStockSecuritiesInfoService/getStockPriceInfo · 인증키 전송: {key_mode}"
             if not detail:
                 upper_message = message.upper()
                 http_known = {
