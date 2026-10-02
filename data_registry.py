@@ -93,7 +93,7 @@ def health(spec: ProviderSpec) -> dict:
         if spec.provider_id == "data_go_kr_stock":
             key = unquote(os.getenv("DATA_GO_KR_SERVICE_KEY", "").strip())
             response = requests.get(
-                "https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo",
+                "https://apis.data.go.kr/1160100/GetStockSecuritiesInfoService_V2/getStockPriceInfo",
                 params={"serviceKey": key, "resultType": "json", "numOfRows": 1, "pageNo": 1},
                 timeout=(5, 12),
             )
@@ -143,7 +143,7 @@ def health(spec: ProviderSpec) -> dict:
             }
             detail = known.get(code)
             if detail == "서비스 활용신청·접근권한 확인 필요":
-                detail += " · 현재 앱 호출 서비스: 금융위원회 주식시세정보 / GetStockSecuritiesInfoService/getStockPriceInfo"
+                detail += " · 현재 앱 호출 서비스: 금융위원회 주식시세정보 / GetStockSecuritiesInfoService_V2/getStockPriceInfo"
             if not detail:
                 upper_message = message.upper()
                 http_known = {
