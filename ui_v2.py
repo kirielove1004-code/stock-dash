@@ -22,6 +22,26 @@ def apply_theme():
         """
 <style>
 
+/* 2026 Light Pro Trading Workspace */
+.trade-topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:2px 0 16px}
+.trade-topbar h1{font-size:30px;margin:3px 0 0;letter-spacing:-.05em}.trade-eyebrow{font-size:10px;color:#2563eb;font-weight:850;letter-spacing:.12em}
+.trade-fresh{font-size:10px;color:#64748b;border:1px solid #dbe5f2;background:#fff;border-radius:999px;padding:7px 10px;white-space:nowrap}
+.trade-fresh i{display:inline-block;width:7px;height:7px;background:#10b981;border-radius:50%;margin-right:6px}
+.trade-market{background:#fff;border:1px solid #e1e7ef;border-radius:14px;padding:15px 17px;min-height:105px;box-shadow:0 5px 18px rgba(15,23,42,.035)}
+.trade-market-label{font-size:12px;color:#1e293b;font-weight:800}.trade-market-value{margin-top:9px;font-size:14px;color:#64748b;font-weight:750}
+.trade-market-foot{display:flex;justify-content:space-between;align-items:end;margin-top:10px;font-size:10px;color:#94a3b8}.trade-market-foot b{font-size:22px}.trade-market-foot .red{color:#ef4444}.trade-market-foot .blue{color:#2563eb}
+.trade-stock-head{display:flex;justify-content:space-between;gap:20px;padding:4px 2px 15px;border-bottom:1px solid #eef2f6}
+.trade-stock-name{font-size:22px;font-weight:850;letter-spacing:-.04em}.trade-stock-name small{font-size:12px;color:#64748b;margin-left:7px}
+.trade-stock-price{font-size:31px;color:#ef4444;font-weight:900;letter-spacing:-.04em;margin-top:7px}.trade-stock-meta{font-size:10px;color:#94a3b8;margin-top:4px}
+.trade-source-pills{display:flex;gap:6px}.trade-source-pills span{height:max-content;padding:5px 9px;border-radius:7px;background:#eff6ff;color:#2563eb;font-size:9px;font-weight:850;border:1px solid #dbeafe}
+.trade-chart-title{display:flex;justify-content:space-between;align-items:center;margin:14px 2px 6px}.trade-chart-title b{font-size:13px}.trade-chart-title span{font-size:9px;color:#94a3b8}
+.trade-side-title,.trade-bottom-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.trade-side-title b{font-size:15px}.trade-side-title span,.trade-bottom-title span{font-size:8px;color:#94a3b8;letter-spacing:.09em}
+.trade-bottom-title{font-size:13px;font-weight:850}
+.trade-watch-row{display:flex;justify-content:space-between;align-items:center;padding:11px 2px;border-bottom:1px solid #eef2f6}
+.trade-watch-row div{min-width:0}.trade-watch-row b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trade-watch-row small{display:block;font-size:9px;color:#94a3b8;margin-top:2px}.trade-watch-row strong{font-size:12px;color:#1e293b;white-space:nowrap}
+.trade-fair{display:flex;gap:5px;align-items:stretch;margin:13px 0}.trade-fair span{flex:1;text-align:center;background:#f8fafc;border:1px solid #edf1f5;border-radius:9px;padding:10px 4px;font-size:9px;color:#64748b}.trade-fair span.base{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}.trade-fair b{display:block;margin-top:4px;font-size:11px;color:#0f172a}
+.trade-news{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid #eef2f6;font-size:9px}.trade-news b{color:#2563eb;white-space:nowrap}.trade-news span{color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:900px){.trade-topbar{display:block}.trade-fresh{display:inline-block;margin-top:10px}.trade-stock-price{font-size:26px}.trade-source-pills{display:none}}
 /* Reference-style dashboard surfaces */
 .sd-dashboard-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding:10px 2px 18px}
 .sd-dashboard-head h1{margin:2px 0 5px;font-size:34px;font-weight:850;letter-spacing:-.045em}
