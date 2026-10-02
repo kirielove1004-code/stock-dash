@@ -1,4 +1,5 @@
 import hashlib
+import html
 import hmac
 import json
 import os
@@ -350,90 +351,181 @@ def global_search():
 
 
 def render_home():
-    """Modern reference-style investment dashboard."""
-    st.markdown("""
-<div class="sd-dashboard-head">
-  <div>
-    <div class="sd-kicker">STOCKDASH / INVESTMENT OS</div>
-    <h1>시장과 내 종목을 한눈에</h1>
-    <p>공시 · 실적 · 주가 · 수급 데이터를 한 화면에서 확인하세요.</p>
-  </div>
-  <div class="sd-live"><span></span> DATA READY</div>
-</div>
-""", unsafe_allow_html=True)
+    """Bright, data-first trading workspace."""
+    result = brief(report) if report else {}
+    price = report.get("price") if report else None
+    price_date = report.get("price_date", "") if report else ""
+    code_label = "코드 확인 대기" if stock.get("code", "").startswith("pending-") else stock.get("code", "")
+    company_name = html.escape(str(stock.get("name", "선택 종목")))
+    company_code = html.escape(str(code_label))
+    source_state = "실데이터" if report and not is_demo else "예시 데이터"
 
+    st.markdown(
+        f"""
+<div class="trade-topbar">
+  <div>
+    <div class="trade-eyebrow">STOCKDASH · PERSONAL INVESTMENT OS</div>
+    <h1>시장과 내 종목을 한눈에</h1>
+  </div>
+  <div class="trade-fresh"><i></i>{html.escape(price_date or "기준일 확인 필요")} · {source_state}</div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
     global_search()
 
-    st.markdown('<div class="sd-section-label">MARKET SNAPSHOT</div>', unsafe_allow_html=True)
-    cols = st.columns(4, gap="medium")
-    for col, title, value, note in zip(
-        cols,
-        ["KOSPI", "KOSDAQ", "외국인 수급", "원 / 달러"],
-        ["데이터 연결 필요"] * 4,
-        ["시장 지수", "시장 지수", "투자자 흐름", "거시 지표"],
-    ):
+    market_cols = st.columns(4, gap="medium")
+    market_cards = [
+        ("KOSPI", "시장 데이터 연결 대기", "KRX 지수", "red"),
+        ("KOSDAQ", "시장 데이터 연결 대기", "KRX 지수", "red"),
+        ("원 / 달러", "환율 데이터 연결 대기", "거시 지표", "blue"),
+        ("외국인 수급", "수급 데이터 연결 대기", "투자자 흐름", "red"),
+    ]
+    for col, (label, value, note, tone) in zip(market_cols, market_cards):
         with col:
             st.markdown(
-                f'<div class="sd-kpi"><div class="sd-kpi-title">{title}</div>'
-                f'<div class="sd-kpi-value">{value}</div><div class="sd-kpi-note">{note}</div></div>',
+                f'<div class="trade-market"><div class="trade-market-label">{label}</div>'
+                f'<div class="trade-market-value">{value}</div>'
+                f'<div class="trade-market-foot"><span>{note}</span><b class="{tone}">⌁</b></div></div>',
                 unsafe_allow_html=True,
             )
 
-    left, right = st.columns([1.8, 1], gap="large")
-    with left:
+    main, watch = st.columns([3.35, 1], gap="medium")
+    with main:
         with st.container(border=True):
-            st.markdown('<div class="sd-panel-title"><span>시장 흐름</span><small>MARKET TREND</small></div>', unsafe_allow_html=True)
-            empty_state("시장 시계열 API 연결 대기", "KOSPI·KOSDAQ 지수와 거래대금 데이터가 연결되면 이 영역에 추이를 표시합니다.")
-    with right:
-        with st.container(border=True):
-            st.markdown('<div class="sd-panel-title"><span>최근 주요 변화</span><small>RECENT EVENTS</small></div>', unsafe_allow_html=True)
-            if report and not is_demo:
-                notices = sorted(report.get("disclosures", []), key=lambda x: x.get("date", ""), reverse=True)
-                if notices:
-                    for item in notices[:5]:
-                        st.link_button(item["date"] + " · " + item["title"], item["url"], use_container_width=True)
+            price_text = f"{price:,.0f}원" if isinstance(price, (int, float)) else "현재가 확인 필요"
+            st.markdown(
+                f"""
+<div class="trade-stock-head">
+  <div>
+    <div class="trade-stock-name">☆ {company_name} <small>{company_code}</small></div>
+    <div class="trade-stock-price">{price_text}</div>
+    <div class="trade-stock-meta">{html.escape(price_date or "시세 기준일 확인 필요")} · 공식 수집 데이터 기준</div>
+  </div>
+  <div class="trade-source-pills"><span>KRX</span><span>DART</span></div>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
+            chart_tab, earnings_tab, value_tab, disclosure_tab = st.tabs(["주가·추세", "실적", "밸류에이션", "공시"])
+            with chart_tab:
+                years = report.get("years", []) if report else []
+                if years:
+                    frame = pd.DataFrame(years)
+                    available = [c for c in ["revenue", "profit"] if c in frame.columns]
+                    if available and "year" in frame.columns:
+                        chart = frame[["year", *available]].copy()
+                        chart["year"] = chart["year"].astype(str)
+                        chart = chart.rename(columns={"year": "연도", "revenue": "매출", "profit": "영업이익"})
+                        st.markdown('<div class="trade-chart-title"><b>기업 실적 추이</b><span>확정 결산 기준</span></div>', unsafe_allow_html=True)
+                        st.line_chart(chart.set_index("연도"), color=["#2563EB", "#EF4444"][:len(available)], height=315)
+                        st.caption("가격 시계열이 연결되기 전에는 검증된 결산 실적 추이를 표시합니다.")
+                    else:
+                        empty_state("차트 데이터 확인 필요", "검증된 시계열 데이터가 연결되면 이 영역에 표시합니다.")
                 else:
-                    st.caption("최근 공시가 없습니다.")
-            else:
-                st.caption("종목을 검색하면 최신 공시와 주요 변화를 보여드립니다.")
+                    empty_state("차트 데이터 확인 필요", "검증된 시계열 데이터가 연결되면 이 영역에 표시합니다.")
+            with earnings_tab:
+                years = report.get("years", []) if report else []
+                if years:
+                    table = pd.DataFrame(years)
+                    keep = [c for c in ["year", "revenue", "profit", "eps"] if c in table.columns]
+                    st.dataframe(
+                        table[keep].rename(columns={"year": "연도", "revenue": "매출", "profit": "영업이익", "eps": "EPS"}),
+                        hide_index=True,
+                        use_container_width=True,
+                    )
+                    st.caption("확정 결산 기준 · 금액 단위는 원천 데이터 정의를 따릅니다.")
+                else:
+                    st.info("실적 데이터가 아직 없습니다.")
+            with value_tab:
+                fair = result.get("fair")
+                if fair:
+                    v1, v2, v3 = st.columns(3)
+                    v1.metric("보수적 참고가", f"{fair['low']:,.0f}원")
+                    v2.metric("기준 참고가", f"{fair['base']:,.0f}원")
+                    v3.metric("낙관적 참고가", f"{fair['high']:,.0f}원")
+                    st.caption("목표주가가 아닌 공식 실적 기반 참고 범위입니다.")
+                else:
+                    st.info("평가에 필요한 실적 또는 가격 데이터가 부족합니다.")
+            with disclosure_tab:
+                notices = sorted((report or {}).get("disclosures", []), key=lambda x: x.get("date", ""), reverse=True)
+                if notices:
+                    for item in notices[:6]:
+                        st.link_button(f"{item.get('date','')} · {item.get('title','공시')}", item.get("url", "#"), use_container_width=True)
+                else:
+                    st.info("수집된 최근 공시가 없습니다.")
 
-    st.markdown('<div class="sd-section-label">MY WATCHLIST</div>', unsafe_allow_html=True)
-    if report:
-        result = brief(report)
-        fair = result.get("fair")
-        cols = st.columns(4, gap="medium")
-        values = [
-            ("현재 선택", stock["name"], stock_label(stock)),
-            ("성장", result.get("growth", "자료 부족"), "확정 결산 기반"),
-            ("가치 상태", result.get("value", "자료 부족"), "역사적 배수 참고"),
-            ("적정가 참고", f"{fair['base']:,.0f}원" if fair else "자료 부족", "목표주가가 아닌 참고값"),
-        ]
-        for col, (title, value, note) in zip(cols, values):
-            with col:
+    with watch:
+        with st.container(border=True):
+            st.markdown('<div class="trade-side-title"><b>관심종목</b><span>WATCHLIST</span></div>', unsafe_allow_html=True)
+            watch_items = [item for item in choices.values() if item.get("code") != "SAMPLE"][:7]
+            if not watch_items:
+                watch_items = [stock]
+            for item in watch_items:
+                item_report = item.get("report") or {}
+                item_price = item_report.get("price") or (item.get("price_snapshot") or {}).get("price")
+                item_price_text = f"{item_price:,.0f}" if isinstance(item_price, (int, float)) else "분석 필요"
+                item_code = item.get("code", "")
+                if str(item_code).startswith("pending-"):
+                    item_code = "코드 확인"
                 st.markdown(
-                    f'<div class="sd-watch-card"><div class="sd-watch-title">{title}</div>'
-                    f'<div class="sd-watch-value">{value}</div><div class="sd-watch-note">{note}</div></div>',
+                    f"""
+<div class="trade-watch-row">
+  <div><b>{html.escape(str(item.get('name','종목')))}</b><small>{html.escape(str(item_code))}</small></div>
+  <strong>{item_price_text}</strong>
+</div>
+""",
                     unsafe_allow_html=True,
                 )
-    else:
-        with st.container(border=True):
-            st.markdown("### 첫 종목을 추가하세요")
-            st.caption("상단 검색창에서 종목명 또는 6자리 코드를 입력하면 기업 분석이 시작됩니다.")
+            st.caption("종목 분석이 완료되면 검증된 기준 가격을 표시합니다.")
 
-    st.markdown('<div class="sd-section-label">NEXT INSIGHTS</div>', unsafe_allow_html=True)
-    for col, title, value, note in zip(
-        st.columns(3, gap="medium"),
-        ["상승률 TOP", "거래대금 TOP", "AI 인사이트"],
-        ["API 연결 대기", "API 연결 대기", "선택 기능"],
-        ["market ranking", "market turnover", "OPENAI API 연결 시 활성화"],
-    ):
-        with col:
-            st.markdown(
-                f'<div class="sd-insight"><div class="sd-insight-icon">✦</div>'
-                f'<div><div class="sd-insight-title">{title}</div><div class="sd-insight-value">{value}</div>'
-                f'<div class="sd-insight-note">{note}</div></div></div>',
-                unsafe_allow_html=True,
-            )
+    bottom_a, bottom_b, bottom_c, bottom_d = st.columns([1.15, 1.15, 1.2, 1], gap="medium")
+    with bottom_a:
+        with st.container(border=True):
+            st.markdown('<div class="trade-bottom-title">최근 실적 <span>FINANCIALS</span></div>', unsafe_allow_html=True)
+            years = report.get("years", []) if report else []
+            if years:
+                latest_year = years[-1]
+                st.metric("매출", f"{latest_year.get('revenue', 0):,.0f}")
+                st.metric("영업이익", f"{latest_year.get('profit', 0):,.0f}")
+                st.caption(f"{latest_year.get('year','')}년 확정 결산")
+            else:
+                st.caption("분석 데이터가 없습니다.")
+    with bottom_b:
+        with st.container(border=True):
+            st.markdown('<div class="trade-bottom-title">적정가 범위 <span>VALUATION</span></div>', unsafe_allow_html=True)
+            fair = result.get("fair")
+            if fair:
+                st.markdown(
+                    f'<div class="trade-fair"><span>보수적<br><b>{fair["low"]:,.0f}원</b></span>'
+                    f'<span class="base">기준<br><b>{fair["base"]:,.0f}원</b></span>'
+                    f'<span>낙관적<br><b>{fair["high"]:,.0f}원</b></span></div>',
+                    unsafe_allow_html=True,
+                )
+                st.caption("가정과 원천자료를 함께 확인하세요.")
+            else:
+                st.caption("평가 데이터가 부족합니다.")
+    with bottom_c:
+        with st.container(border=True):
+            st.markdown('<div class="trade-bottom-title">최근 공시 <span>DART</span></div>', unsafe_allow_html=True)
+            notices = sorted((report or {}).get("disclosures", []), key=lambda x: x.get("date", ""), reverse=True)
+            if notices:
+                for item in notices[:3]:
+                    st.markdown(f'<div class="trade-news"><b>{html.escape(str(item.get("date","")))}</b><span>{html.escape(str(item.get("title","공시")))}</span></div>', unsafe_allow_html=True)
+            else:
+                st.caption("수집된 공시가 없습니다.")
+    with bottom_d:
+        with st.container(border=True):
+            st.markdown('<div class="trade-bottom-title">포트폴리오 <span>ALLOCATION</span></div>', unsafe_allow_html=True)
+            positions = st.session_state.get("account_snapshot", {}).get("positions", [])
+            if positions:
+                st.metric("보유 종목", f"{len(positions)}개")
+                for item in positions[:3]:
+                    st.caption(f"{item.get('name','종목')} · {item.get('code','')}")
+            else:
+                st.metric("관심 종목", f"{len(choices)}개")
+                st.caption("계좌 연결 후 보유 비중을 표시합니다.")
+
 
 def render_market():
     hero("시장 현황", "지수·거래대금·시장 폭·투자자 수급을 한 화면으로 연결하는 영역입니다.", "MARKET")
